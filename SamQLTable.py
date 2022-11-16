@@ -25,6 +25,12 @@ class SamQLTable:
             self.numOfRows = len(self.rows)
 
     def create_table(self, columns: str) -> None:
+        """
+        creates a table with columns specified
+        input: string columns
+        output: confirmation or error
+        return: none
+        """
         if (os.path.exists(self.tablePath) == False):
             input = "".join(columns).replace(", ", "|").strip()
             subprocess.run(["touch", f"{self.tablePath}"])
@@ -110,6 +116,12 @@ class SamQLTable:
             print(f"ERROR: Table {self.tableName} does not exist.")
 
     def alter_table(self, attribute: str) -> None:
+        """
+        alters the columns of a table
+        input: string new attribute
+        output: confirmation or error
+        return: none
+        """
         if (os.path.exists(self.tablePath) == True):
             self.columns = f"{self.columns}{attribute}"
             self.numOfCols += 1
@@ -119,6 +131,12 @@ class SamQLTable:
             print(f"ERROR: Table {self.tableName} does not exist.")
 
     def update_table(self, args: str) -> None:
+        """
+        updates a table where specified
+        input: string of arguments
+        output: records modified
+        return: none
+        """
         recsModified = 0
         # get set conditions
         sColumn, sOpertaion, sNewValue = args.split(
@@ -174,6 +192,13 @@ class SamQLTable:
         print(f"{recsDeleted} records deleted.")
 
     def select_from_table(self, args: str) -> None:
+        """
+        selects certain rows based on a condition 
+        sends to exteranl funtion to print
+        input: string of arguments
+        output: none
+        return: none
+        """
         result = []
 
         selectors = args.replace(",", "").split()[args.split().index(
@@ -192,7 +217,13 @@ class SamQLTable:
 
         print_list_formated(result, len(selectorIndicies))
 
-    def drop_table(self):
+    def drop_table(self) -> None:
+        """
+        deletes a table
+        input: none
+        output: confirmation or error
+        return: none
+        """
         if (os.path.exists(self.tablePath) == True):
             subprocess.run(["rm", f"{self.tablePath}"])
             print(f"Dropped table {self.tableName}.")
@@ -200,6 +231,12 @@ class SamQLTable:
             print(f"ERROR: {self.tableName} does not exist.")
 
     def get_column_index(self, column: str) -> int:
+        """
+        gets the index of a attribute from the columns list
+        input: string the column
+        output: none
+        return: int the index
+        """
         columnIndex = 0
         for columns in self.columns.split("|"):
             if (column in columns.split()):
@@ -209,10 +246,22 @@ class SamQLTable:
 
 # utitlity functions
 def clean_string(string: str) -> str:
+    """
+        removes single quotes from strings 
+        input: string columns
+        output: none
+        return: string without single quotes
+        """
     return string.replace("'", "")
 
 
 def print_list_formated(table: list, tableWidth: int) -> None:
+    """
+        prints a list in the table format based on its width
+        input: list table int width of the table 
+        output: list in table format 
+        return: none
+        """
     for i in range(0, tableWidth+4, tableWidth):
         print("".join(table[i] +
                       " | " + "".join(table[i+1])))

@@ -7,7 +7,7 @@
 import os
 import sys
 import subprocess
-from SamQLTable import SamQLTable
+from SamQLTable import SamQLTable, print_list_formated
 
 activeDB = "."
 quit = False
@@ -44,7 +44,7 @@ def handle_prog_args() -> None:
         print(f"ERROR: File {fileName} does not exist")
 
 
-def handle_args(arg) -> None:
+def handle_args(arg: str) -> None:
     """
     takes the commands and arguments from input and sends them
     to the corresponding function
@@ -61,8 +61,6 @@ def handle_args(arg) -> None:
         create_table(arg.removeprefix("CREATE TABLE").strip())
     elif (arg.__contains__("DROP TABLE")):
         drop_table(arg.removeprefix("DROP TABLE ").strip())
-    elif (arg.__contains__("SELECT")):
-        select_from_table(arg.removeprefix("SELECT").strip())
     elif (arg.__contains__("ALTER")):
         alter_table(arg.removeprefix("ALTER").strip())
     # tuple functions
@@ -84,7 +82,7 @@ def handle_args(arg) -> None:
             print(f"Unknown command: {arg}")
 
 
-def create_database(data):
+def create_database(data: str) -> None:
     """
     handles the creation of databases
     """
@@ -95,7 +93,7 @@ def create_database(data):
         print(f"Created database {data}")
 
 
-def drop_database(data):
+def drop_database(data: str) -> None:
     """
     handles the deletion of databases
     """
@@ -107,7 +105,7 @@ def drop_database(data):
         print(f"ERROR: No database named {data}")
 
 
-def use_database(data):
+def use_database(data: str) -> None:
     """
     sets the current working database
     """
@@ -119,7 +117,7 @@ def use_database(data):
         print(f"ERROR: No database named {data} exists")
 
 
-def create_table(data):
+def create_table(data: str) -> None:
     """
     handles table creation
     """
@@ -130,7 +128,7 @@ def create_table(data):
     del table
 
 
-def drop_table(data):
+def drop_table(data: str) -> None:
     """
     handles table deletion
     """
@@ -140,17 +138,7 @@ def drop_table(data):
     del table
 
 
-def select_from_table(data):
-    """
-    handles getting data from tables
-    """
-    tableName = data.removeprefix("* FROM").strip()
-    table = SamQLTable(activeDB, tableName)
-    table.print_table()
-    del table
-
-
-def alter_table(data):
+def alter_table(data: str) -> None:
     """
     handles altering data in tables
     """
@@ -162,21 +150,61 @@ def alter_table(data):
     del table
 
 
-def select_from_tuple(data):
+def select_from_tuple(data: str) -> None:
     """
     handles getting data from tables
     """
     # gets tableName from data
     tableName = data.split()[data.split().index("from")+1].capitalize()
-    table = SamQLTable(activeDB, tableName)
     if (data.__contains__("*")):
-        table.print_table()
+        fromTables = get_join_tables(data.split("\n"))
+        tables = []
+        for table in fromTables:
+            tables.append(SamQLTable(activeDB, table.replace("'", "")))
+
+        if (data.__contains__("left outer join")):
+            print(tables[0].columns.replace(
+                "|", " | ") + " | " + tables[1].columns.replace(
+                "|", " | "))
+            for line1 in tables[0].rows:
+                line2_ids = []
+                for line2 in tables[1].rows:
+                    if (line1.split("|")[0] == line2.split("|")[0]):
+                        line2_ids.append(line2.split("|")[0])
+                        print(line1.replace(
+                            "|", " | ") + " | " + line2.replace(
+                            "|", " | "))
+                if (line1.split("|")[0] not in line2_ids):
+                    print(line1.replace(
+                        "|", " | ") + " | | ")
+        else:
+            print(tables[0].columns.replace(
+                "|", " | ") + " | " + tables[1].columns.replace(
+                "|", " | "))
+            for line1 in tables[0].rows:
+                for line2 in tables[1].rows:
+                    if (line1.split("|")[0] == line2.split("|")[0]):
+                        print(line1.replace(
+                            "|", " | ") + " | " + line2.replace(
+                            "|", " | "))
+
     else:
+        table = SamQLTable(activeDB, tableName)
         table.select_from_table(data.replace("\n", ""))
     del table
 
 
-def insert_into(data):
+def get_join_tables(args: str) -> list:
+    table = []
+    fromStatement = args[1].replace("from", "").replace(
+        "inner join", "").replace("left outer join", "").replace(",", "").strip()
+    for e in fromStatement.split(" "):
+        if (len(e) > 1):
+            table.append(e)
+    return table
+
+
+def insert_into(data: str) -> None:
     """
     inserts values into table
     """
@@ -188,7 +216,7 @@ def insert_into(data):
     del table
 
 
-def update_tuple(data):
+def update_tuple(data: str) -> None:
     """
     updates a tables data
     """
@@ -198,7 +226,7 @@ def update_tuple(data):
     del table
 
 
-def delete_tuple(data):
+def delete_tuple(data: str) -> None:
     """
     deletes data in table
     """
