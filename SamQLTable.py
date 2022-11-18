@@ -37,7 +37,7 @@ class SamQLTable:
             with open(self.tablePath, "w", newline='') as file:
                 file.write(input)
                 file.close()
-            print(f"Create table {self.tableName}")
+            print(f"Created table {self.tableName}")
         else:
             print(f"ERROR: Table {self.tableName} exists")
 
@@ -111,7 +111,7 @@ class SamQLTable:
             self.numOfRows += 1
             self.rows.append(inputData)
             self.refresh_table()
-            print(f"{recsInserted} records inserted.")
+            print(f"{recsInserted} record(s) inserted.")
         else:
             print(f"ERROR: Table {self.tableName} does not exist.")
 
@@ -187,14 +187,14 @@ class SamQLTable:
                         self.refresh_table()
                 except:
                     TypeError
-                    print(f"ERROR: {value} is not a numnber.")
+                    print(f"ERROR: {value} is not a number.")
                     break
         print(f"{recsDeleted} records deleted.")
 
     def select_from_table(self, args: str) -> None:
         """
         selects certain rows based on a condition 
-        sends to exteranl funtion to print
+        sends to external function to print
         input: string of arguments
         output: none
         return: none

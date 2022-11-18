@@ -2,12 +2,11 @@
 # CS457
 # 31 October 2022
 # Project 3 for CS457
-# History:
 
 import os
 import sys
 import subprocess
-from SamQLTable import SamQLTable, print_list_formated
+from SamQLTable import SamQLTable
 
 activeDB = "."
 quit = False
@@ -29,7 +28,7 @@ def main() -> None:
 def handle_prog_args() -> None:
     """
     takes the second argument as the file name and reads
-    that file then sends that to the handle_args fucntion
+    that file then sends that to the handle_args function
     """
     fileName = sys.argv[1]
     if (os.path.exists(fileName)):
@@ -57,8 +56,9 @@ def handle_args(arg: str) -> None:
     elif (arg.__contains__("USE")):
         use_database(arg.removeprefix("USE").strip())
     # table functions
-    elif (arg.__contains__("CREATE TABLE")):
-        create_table(arg.removeprefix("CREATE TABLE").strip())
+    elif (arg.__contains__("CREATE TABLE") or arg.__contains__("create table")):
+        create_table(arg.removeprefix(
+            "CREATE TABLE").removeprefix("create table").strip())
     elif (arg.__contains__("DROP TABLE")):
         drop_table(arg.removeprefix("DROP TABLE ").strip())
     elif (arg.__contains__("ALTER")):
@@ -74,7 +74,8 @@ def handle_args(arg: str) -> None:
         delete_tuple(arg.removeprefix("delete").strip())
     # other
     else:
-        if (arg.__contains__("EXIT") or arg.__contains__(".EXIT")):
+        if (arg.__contains__("EXIT") or arg.__contains__(".EXIT")
+                or arg.__contains__(".exit")):
             global quit
             quit = True
             print("All done.")
@@ -121,7 +122,7 @@ def create_table(data: str) -> None:
     """
     handles table creation
     """
-    tableName = data.split()[0].strip()
+    tableName = data.split()[0].strip()[:data.find('(')]
     # parses the data between ( )
     args = data[data.find('(')+1:data.rfind(')')]
     table = SamQLTable(activeDB, tableName, args)
@@ -162,6 +163,7 @@ def select_from_tuple(data: str) -> None:
         for table in fromTables:
             tables.append(SamQLTable(activeDB, table.replace("'", "")))
 
+        # left outer join
         if (data.__contains__("left outer join")):
             print(tables[0].columns.replace(
                 "|", " | ") + " | " + tables[1].columns.replace(
@@ -178,6 +180,7 @@ def select_from_tuple(data: str) -> None:
                     print(line1.replace(
                         "|", " | ") + " | | ")
         else:
+            # inner join
             print(tables[0].columns.replace(
                 "|", " | ") + " | " + tables[1].columns.replace(
                 "|", " | "))
@@ -187,7 +190,7 @@ def select_from_tuple(data: str) -> None:
                         print(line1.replace(
                             "|", " | ") + " | " + line2.replace(
                             "|", " | "))
-
+        del tables
     else:
         table = SamQLTable(activeDB, tableName)
         table.select_from_table(data.replace("\n", ""))
@@ -195,6 +198,9 @@ def select_from_tuple(data: str) -> None:
 
 
 def get_join_tables(args: str) -> list:
+    """
+    get the names of tables to preform a join on 
+    """
     table = []
     fromStatement = args[1].replace("from", "").replace(
         "inner join", "").replace("left outer join", "").replace(",", "").strip()
