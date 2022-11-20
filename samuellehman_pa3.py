@@ -163,19 +163,26 @@ def select_from_tuple(data: str) -> None:
         for table in fromTables:
             tables.append(SamQLTable(activeDB, table.replace("'", "")))
 
+        columns, operation = get_where_on(data)
+
         # left outer join
         if (data.__contains__("left outer join")):
             print(tables[0].columns.replace(
                 "|", " | ") + " | " + tables[1].columns.replace(
                 "|", " | "))
+
             for line1 in tables[0].rows:
                 line2_ids = []
                 for line2 in tables[1].rows:
-                    if (line1.split("|")[0] == line2.split("|")[0]):
-                        line2_ids.append(line2.split("|")[0])
-                        print(line1.replace(
-                            "|", " | ") + " | " + line2.replace(
-                            "|", " | "))
+                    if (operation == "="):
+                        # checking the indicies where the columns are located in
+                        # their respective tables
+                        if (line1.split("|")[tables[0].get_column_index(columns[0])]
+                                == line2.split("|")[tables[1].get_column_index(columns[1])]):
+                            line2_ids.append(line2.split("|")[0])
+                            print(line1.replace(
+                                "|", " | ") + " | " + line2.replace(
+                                "|", " | "))
                 if (line1.split("|")[0] not in line2_ids):
                     print(line1.replace(
                         "|", " | ") + " | | ")
@@ -186,15 +193,38 @@ def select_from_tuple(data: str) -> None:
                 "|", " | "))
             for line1 in tables[0].rows:
                 for line2 in tables[1].rows:
-                    if (line1.split("|")[0] == line2.split("|")[0]):
-                        print(line1.replace(
-                            "|", " | ") + " | " + line2.replace(
-                            "|", " | "))
+                    if (operation == "="):
+                        # checking the indicies where the columns are located in
+                        # their respective tables
+                        if (line1.split("|")[tables[0].get_column_index(columns[0])]
+                                == line2.split("|")[tables[1].get_column_index(columns[1])]):
+                            print(line1.replace(
+                                "|", " | ") + " | " + line2.replace(
+                                "|", " | "))
         del tables
     else:
         table = SamQLTable(activeDB, tableName)
         table.select_from_table(data.replace("\n", ""))
     del table
+
+
+def get_where_on(data: str) -> list:
+    """
+    returns the columns and the comparison operation from the 
+    join statement
+    """
+    values = None
+    operation = None
+    columns = []
+    if (data[data.find("where"):] != "D"):
+        values = str(data[data.find("where"):]).removeprefix("where ")
+    elif (data[data.find("on"):] != "D"):
+        values = str(data[data.find("on"):]).removeprefix("on ")
+    operation = values.split(" ")[1]
+    for word in values.split():
+        if (len(word) > 1):
+            columns.append(word[word.find(".")+1:])
+    return [columns, operation]
 
 
 def get_join_tables(args: str) -> list:

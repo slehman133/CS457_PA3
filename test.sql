@@ -17,7 +17,6 @@ on E.id = S.employeeID;
 select * 
 from Employee E left outer join Sales S 
 on E.id = S.employeeID;
-DROP DATABASE CS457_PA3;
 .exit
 
 -- Expected output

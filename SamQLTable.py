@@ -215,7 +215,7 @@ class SamQLTable:
                 if row.split("|").index(e) in selectorIndicies:
                     result.append(e.strip())
 
-        print_list_formated(result, len(selectorIndicies))
+        print_list_formatted(result, len(selectorIndicies))
 
     def drop_table(self) -> None:
         """
@@ -244,24 +244,24 @@ class SamQLTable:
         return columnIndex
 
 
-# utitlity functions
+# utility functions
 def clean_string(string: str) -> str:
     """
-        removes single quotes from strings 
-        input: string columns
-        output: none
-        return: string without single quotes
-        """
+    removes single quotes from strings 
+    input: string columns
+    output: none
+    return: string without single quotes
+    """
     return string.replace("'", "")
 
 
-def print_list_formated(table: list, tableWidth: int) -> None:
+def print_list_formatted(table: list, tableWidth: int) -> None:
     """
-        prints a list in the table format based on its width
-        input: list table int width of the table 
-        output: list in table format 
-        return: none
-        """
+    prints a list in the table format based on its width
+    input: list table int width of the table 
+    output: list in table format 
+    return: none
+    """
     for i in range(0, tableWidth+4, tableWidth):
         print("".join(table[i] +
                       " | " + "".join(table[i+1])))
