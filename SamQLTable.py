@@ -7,7 +7,7 @@ class SamQLTable:
     class for the table
     """
 
-    def __init__(self, activeDB: str, tableName: str, attributes: str = None):
+    def __init__(self, activeDB: str, tableName: str, attributes: str = None, isLock=False):
         """
         table class constructor
         """
@@ -15,7 +15,7 @@ class SamQLTable:
         self.tableName = tableName
         self.tablePath = f"{activeDB}/{tableName}"
         if (attributes != None):
-            self.create_table(attributes)
+            self.create_table(attributes, isLock)
             self.__init__(self.activeDB, self.tableName)
         else:
             self.tableContents = self.read_table_file(self.tablePath)
@@ -24,7 +24,7 @@ class SamQLTable:
             self.rows = self.tableContents[1:]
             self.numOfRows = len(self.rows)
 
-    def create_table(self, columns: str) -> None:
+    def create_table(self, columns: str, isLock: bool) -> None:
         """
         creates a table with columns specified
         input: string columns
@@ -37,9 +37,13 @@ class SamQLTable:
             with open(self.tablePath, "w", newline='') as file:
                 file.write(input)
                 file.close()
-            print(f"Created table {self.tableName}")
+            if (isLock == False):
+                print(f"Created table {self.tableName}")
         else:
-            print(f"ERROR: Table {self.tableName} exists")
+            if (isLock == True):
+                return
+            else:
+                print(f"ERROR: Table {self.tableName} exists")
 
     def read_table_file(self, tablePath: str) -> list:
         """
@@ -140,11 +144,11 @@ class SamQLTable:
         recsModified = 0
         # get set conditions
         sColumn, sOpertaion, sNewValue = args.split(
-        )[args.split().index("set")+1:(args.split().index("set")+1)+self.numOfCols]
+        )[args.split().index("set")+1:(args.split().index("set")+1)+self.numOfCols+1]
         sColumnIndex = self.get_column_index(sColumn)
         # get where conditions
         wColumn, wOpertaion, wOldValue = args.split(
-        )[args.split().index("where")+1:(args.split().index("where")+1)+self.numOfCols]
+        )[args.split().index("where")+1:(args.split().index("where")+1)+self.numOfCols+1]
         wColumnIndex = self.get_column_index(wColumn)
 
         newRow = []
@@ -262,6 +266,7 @@ def print_list_formatted(table: list, tableWidth: int) -> None:
     output: list in table format 
     return: none
     """
+    print(table)
     for i in range(0, tableWidth+4, tableWidth):
         print("".join(table[i] +
                       " | " + "".join(table[i+1])))
